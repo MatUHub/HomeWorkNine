@@ -17,4 +17,12 @@ public class CardData {
     public String getDescription() {
         return description;
     }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

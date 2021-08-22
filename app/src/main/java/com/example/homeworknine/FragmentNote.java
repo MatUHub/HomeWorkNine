@@ -1,6 +1,7 @@
 package com.example.homeworknine;
 
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,17 +21,19 @@ public class FragmentNote extends Fragment {
 
     private CardSource data;
     private AdapterNote adapterNote;
+    private RecyclerView recyclerView;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_note, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView = view.findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
         data = new CardSourceImpl(getResources()).init();
-        adapterNote = new AdapterNote(data);
+        adapterNote = new AdapterNote(data, this);
         adapterNote.setOnMyOnClickListener(new MyOnClickListener() {
             @Override
             public void onMyClick(View view, int position) {
@@ -51,9 +54,35 @@ public class FragmentNote extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_add:
                 data.addCardData(new CardData("New Запись " + (data.size() + 1), "new Дело " + (data.size() + 1)));
-adapterNote.notifyDataSetChanged();
+                adapterNote.notifyDataSetChanged();
+                return true;
+            case R.id.action_clear:
+                data.clearCardData();
+                adapterNote.notifyDataSetChanged();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        requireActivity().getMenuInflater().inflate(R.menu.card_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        int position = adapterNote.getMenuContextOnClickPosition();
+        switch (item.getItemId()) {
+            case R.id.card_action_update:
+                data.getCardData(position).setNote("Обновлено " + (position + 1));
+                adapterNote.notifyItemChanged(position);
+                return true;
+            case R.id.card_action_clear:
+                data.deleteCardData(position);
+                adapterNote.notifyItemRemoved(position);
+                return true;
+        }
+        return super.onContextItemSelected(item);
     }
 }
